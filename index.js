@@ -11,16 +11,14 @@ client.on('connect', function () {
  
 client.on('message', function (topic, message) {
   // message is Buffer
-console.log(topic); 
 var devId = topic.split("/").slice(-1)[0]
  var locobject = JSON.parse(message.toString())
- console.log(message.toString());
- updatePtr(devId, locobject.lat, locobject.lon, locobject.batt, locobject.conn )
+ updatePtr(devId, locobject.lat, locobject.lon, locobject.batt )
 })
 
 
-function updatePtr(apikey, lat,lon,battery, provider){
-	var ext = {bat: battery/100,prov: provider}
+function updatePtr(apikey, lat,lon,battery){
+	var ext = {bat: battery/100}
         var data = {form:{apikey:apikey,lat:lat, lon:lon, ext: JSON.stringify(ext) }}
 	request.post(url, data, function(err,httpResponse,body){
 	})
