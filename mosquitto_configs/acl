@@ -1,0 +1,5 @@
+pattern write owntracks/%u/#
+pattern read owntracks/%u/#
+user root
+topic read #
+topic write #
