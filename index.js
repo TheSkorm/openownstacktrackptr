@@ -124,11 +124,15 @@ function createWS(key, user) {
             return updateUsers(user, data2)
         });
         var callUpdate = function() {
-            session.call('com.stackptr.api.userList').then(function(data) {
-                updateUsers(user, {
-                    "msg": data[1].data
-                }, true)
-            });
+            try {
+                session.call('com.stackptr.api.userList').then(function(data) {
+                    updateUsers(user, {
+                        "msg": data[1].data
+                    }, true)
+                });
+            } catch (e) {
+                console.log(e)
+            }
         }
         setInterval(callUpdate, 900000);
     }
