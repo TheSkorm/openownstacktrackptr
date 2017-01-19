@@ -29,7 +29,9 @@ client.on('message', function(topic, message) {
 
 function updatePtr(apikey, lat, lon, battery) {
     var ext = {
-        bat: battery / 100
+        bat: battery / 100,
+        prov: "via OwnTracks"
+
     }
     var data = {
         form: {
