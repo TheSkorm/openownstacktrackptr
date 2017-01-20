@@ -122,7 +122,6 @@ function createWS(key, user) {
         var callUpdate = function() {
             try {
                 session.call('com.stackptr.api.userList').then(function(data) {
-                    console.log(data);
                     for (var i = 0; i < data.length; i++) {
                         if (data[i].type == "user" || data[i].type == "user-me") {
                             updateUsers(user, {
