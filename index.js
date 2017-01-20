@@ -23,6 +23,7 @@ client.on('message', function(topic, message) {
     updatePtr(devId, locobject.lat, locobject.lon, locobject.batt)
     if (!(devId in stackptrUsers) && devId.length == 32) {
         stackptrUsers[devId] = createWS(devId, user);
+	console.log("updating stackptr for owntracks user " + user);
     }
 })
 
@@ -47,7 +48,6 @@ function updatePtr(apikey, lat, lon, battery) {
 
 function loginToWamp(key) {
     return function(event, data) {
-        console.log(key);
         return (key);
     }
 }
@@ -60,8 +60,7 @@ function sendCard(user, fakename, data) {
     var parts = url.parse(data, true);
     parts.query.s = 40;
     delete parts.search;
-    console.log(url.format(parts))
-
+    console.log("Send card to owntracks["+ user+"] for stackptr user " + fakename)
     base64.encode(url.format(parts), {
         string: true
     }, function(err, data) {
@@ -75,13 +74,9 @@ function sendCard(user, fakename, data) {
 }
 
 function updateUsers(user, data2, sendc) {
-    console.log(data2)
-    console.log("Faking data for " + user + " on owntracks")
-    console.log()
     for (var i = 0; i < data2.msg.length; i++) {
         var content = data2.msg[i];
-        console.log(content.loc)
-        console.log(content.extra)
+        console.log("Sending to owntracks["+user+"]"+ " data from stackptr user " + content.username)
         fakeOwnTracks(user, content.username, {
             "_type": "location",
             lat: content.loc[0],
@@ -95,20 +90,17 @@ function updateUsers(user, data2, sendc) {
         if (sendc) {
             sendCard(user, content.username, content.icon)
         }
-        console.log(content.username)
     }
 }
 
 function fakeOwnTracks(user, fakename, data) {
-    console.log('owntracks/' + user + '/' + fakename)
-    console.log(data)
     client.publish('owntracks/' + user + '/' + fakename, JSON.stringify(data), {
         retain: true
     });
 }
 
 function createWS(key, user) {
-    console.log(user)
+    console.log("Creating websocket for " + user)
     var connection = new autobahn.Connection({
         url: 'wss://stackptr.com/ws',
         realm: 'stackptr',
@@ -116,7 +108,7 @@ function createWS(key, user) {
         authmethods: ["ticket"],
         onchallenge: loginToWamp(key)
     });
-
+    var updater = {};
     connection.onopen = function(session) {
         console.log("websocket opened");
 
@@ -134,13 +126,18 @@ function createWS(key, user) {
                 console.log(e)
             }
         }
-        setInterval(callUpdate, 900000);
+        console.log("starting update timer")
+        updater = setInterval(callUpdate, 900000);
+        callUpdate();
     }
     connection.onclose = function(reason, details) {
         console.log("///")
         console.log(reason);
         console.log(details);
+        console.log("deleting timer")
+	clearInterval(updater)
         console.log("\\\\\\");
+
     }
     connection.open();
 }
