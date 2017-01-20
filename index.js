@@ -19,11 +19,15 @@ client.on('message', function(topic, message) {
     // message is Buffer
     var devId = topic.split("/").slice(-1)[0]
     var user = topic.split("/").slice(-2)[0]
-    var locobject = JSON.parse(message.toString())
-    updatePtr(devId, locobject.lat, locobject.lon, locobject.batt)
-    if (!(devId in stackptrUsers) && devId.length == 32) {
-        stackptrUsers[devId] = createWS(devId, user);
-	console.log("updating stackptr for owntracks user " + user);
+    try {
+        var locobject = JSON.parse(message.toString())
+        updatePtr(devId, locobject.lat, locobject.lon, locobject.batt)
+        if (!(devId in stackptrUsers) && devId.length == 32) {
+            stackptrUsers[devId] = createWS(devId, user);
+            console.log("updating stackptr for owntracks user " + user);
+        }
+    } catch (e) {
+        console.log(e);
     }
 })
 
@@ -60,7 +64,7 @@ function sendCard(user, fakename, data) {
     var parts = url.parse(data, true);
     parts.query.s = 40;
     delete parts.search;
-    console.log("Send card to owntracks["+ user+"] for stackptr user " + fakename)
+    console.log("Send card to owntracks[" + user + "] for stackptr user " + fakename)
     base64.encode(url.format(parts), {
         string: true
     }, function(err, data) {
@@ -76,7 +80,7 @@ function sendCard(user, fakename, data) {
 function updateUsers(user, data2, sendc) {
     for (var i = 0; i < data2.msg.length; i++) {
         var content = data2.msg[i];
-        console.log("Sending to owntracks["+user+"]"+ " data from stackptr user " + content.username)
+        console.log("Sending to owntracks[" + user + "]" + " data from stackptr user " + content.username)
         fakeOwnTracks(user, content.username, {
             "_type": "location",
             lat: content.loc[0],
@@ -135,7 +139,7 @@ function createWS(key, user) {
         console.log(reason);
         console.log(details);
         console.log("deleting timer")
-	clearInterval(updater)
+        clearInterval(updater)
         console.log("\\\\\\");
 
     }
